@@ -33,6 +33,8 @@
 #import "OHAttributedLabel.h"
 #import "NSAttributedString+Attributes.h"
 
+CTTextAlignment CTTextAlignmentFromNSTextAlignment(NSTextAlignment alignment);
+CTLineBreakMode CTLineBreakModeFromNSLineBreakMode(NSLineBreakMode lineBreakMode);
 CTTextAlignment CTTextAlignmentFromUITextAlignment(UITextAlignment alignment);
 CTLineBreakMode CTLineBreakModeFromUILineBreakMode(UILineBreakMode lineBreakMode);
 CGPoint CGPointFlipped(CGPoint point, CGRect bounds);
@@ -44,6 +46,31 @@ BOOL CTLineContainsCharactersFromStringRange(CTLineRef line, NSRange range);
 BOOL CTRunContainsCharactersFromStringRange(CTRunRef run, NSRange range);
 
 
+
+CTTextAlignment CTTextAlignmentFromNSTextAlignment(NSTextAlignment alignment) {
+    switch (alignment) {
+        case NSTextAlignmentLeft: return kCTLeftTextAlignment;
+        case NSTextAlignmentCenter: return kCTCenterTextAlignment;
+        case NSTextAlignmentRight: return kCTRightTextAlignment;
+#pragma GCC diagnostic push // supress warning
+#pragma GCC diagnostic ignored "-Wswitch"
+        case NSTextAlignmentJustified: return kCTJustifiedTextAlignment; /* special OOB value if we decide to use it even if it's not really standard... */
+#pragma GCC diagnostic pop
+        default: return kCTNaturalTextAlignment;
+    }
+}
+
+CTLineBreakMode CTLineBreakModeFromNSLineBreakMode(NSLineBreakMode lineBreakMode) {
+    switch (lineBreakMode) {
+        case NSLineBreakByWordWrapping: return kCTLineBreakByWordWrapping;
+        case NSLineBreakByCharWrapping: return kCTLineBreakByCharWrapping;
+        case NSLineBreakByClipping: return kCTLineBreakByClipping;
+        case NSLineBreakByTruncatingHead: return kCTLineBreakByTruncatingHead;
+        case NSLineBreakByTruncatingTail: return kCTLineBreakByTruncatingTail;
+        case NSLineBreakByTruncatingMiddle: return kCTLineBreakByTruncatingMiddle;
+        default: return 0;
+    }
+}
 
 CTTextAlignment CTTextAlignmentFromUITextAlignment(UITextAlignment alignment) {
 	switch (alignment) {
@@ -547,8 +574,8 @@ BOOL CTRunContainsCharactersFromStringRange(CTRunRef run, NSRange range) {
 	NSMutableAttributedString* mutAttrStr = [NSMutableAttributedString attributedStringWithString:self.text];
 	[mutAttrStr setFont:self.font];
 	[mutAttrStr setTextColor:self.textColor];
-	CTTextAlignment coreTextAlign = CTTextAlignmentFromUITextAlignment(self.textAlignment);
-	CTLineBreakMode coreTextLBMode = CTLineBreakModeFromUILineBreakMode(self.lineBreakMode);
+	CTTextAlignment coreTextAlign = CTTextAlignmentFromNSTextAlignment(self.textAlignment);
+	CTLineBreakMode coreTextLBMode = CTLineBreakModeFromNSLineBreakMode(self.lineBreakMode);
 	[mutAttrStr setTextAlignment:coreTextAlign lineBreakMode:coreTextLBMode];
 	self.attributedText = mutAttrStr;
 }
@@ -584,15 +611,15 @@ BOOL CTRunContainsCharactersFromStringRange(CTRunRef run, NSRange range) {
 	[_attributedText setTextColor:color];
 	[super setTextColor:color]; // will call setNeedsDisplay too
 }
--(void)setTextAlignment:(UITextAlignment)alignment {
-	CTTextAlignment coreTextAlign = CTTextAlignmentFromUITextAlignment(alignment);
-	CTLineBreakMode coreTextLBMode = CTLineBreakModeFromUILineBreakMode(self.lineBreakMode);
+-(void)setTextAlignment:(NSTextAlignment)alignment {
+	CTTextAlignment coreTextAlign = CTTextAlignmentFromNSTextAlignment(alignment);
+	CTLineBreakMode coreTextLBMode = CTLineBreakModeFromNSLineBreakMode(self.lineBreakMode);
 	[_attributedText setTextAlignment:coreTextAlign lineBreakMode:coreTextLBMode];
 	[super setTextAlignment:alignment]; // will call setNeedsDisplay too
 }
--(void)setLineBreakMode:(UILineBreakMode)lineBreakMode {
-	CTTextAlignment coreTextAlign = CTTextAlignmentFromUITextAlignment(self.textAlignment);
-	CTLineBreakMode coreTextLBMode = CTLineBreakModeFromUILineBreakMode(lineBreakMode);
+-(void)setLineBreakMode:(NSLineBreakMode)lineBreakMode {
+	CTTextAlignment coreTextAlign = CTTextAlignmentFromNSTextAlignment(self.textAlignment);
+	CTLineBreakMode coreTextLBMode = CTLineBreakModeFromNSLineBreakMode(lineBreakMode);
 	[_attributedText setTextAlignment:coreTextAlign lineBreakMode:coreTextLBMode];
 	[super setLineBreakMode:lineBreakMode]; // will call setNeedsDisplay too
 }
